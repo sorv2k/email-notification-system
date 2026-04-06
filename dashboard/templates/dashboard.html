@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="5" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Notification Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+           background: #f0f2f5; color: #222; padding: 24px; }
+    h1 { font-size: 1.6rem; margin-bottom: 4px; }
+    .subtitle { color: #666; font-size: 0.85rem; margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .card .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .05em; color: #888; }
+    .card .value { font-size: 2rem; font-weight: 700; margin-top: 6px; }
+    .card.total   .value { color: #1a73e8; }
+    .card.pending .value { color: #f59e0b; }
+    .card.sending .value { color: #6366f1; }
+    .card.sent    .value { color: #10b981; }
+    .card.failed  .value { color: #ef4444; }
+    .card.dead    .value { color: #6b7280; }
+    .card.queue   .value { color: #0ea5e9; }
+    h2 { font-size: 1.1rem; margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; background: #fff;
+            border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    th { background: #f8f9fa; padding: 10px 14px; text-align: left;
+         font-size: 0.78rem; text-transform: uppercase; color: #555; border-bottom: 1px solid #e5e7eb; }
+    td { padding: 10px 14px; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; }
+    tr:last-child td { border-bottom: none; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+    .badge.ok   { background: #d1fae5; color: #065f46; }
+    .badge.idle { background: #e0e7ff; color: #3730a3; }
+    footer { margin-top: 24px; font-size: 0.75rem; color: #aaa; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>📧 Email Notification Dashboard</h1>
+  <p class="subtitle">Auto-refreshes every 5 seconds &mdash; Last updated: {{ metrics.collected_at }}</p>
+
+  <div class="grid">
+    <div class="card total">
+      <div class="label">Total</div>
+      <div class="value">{{ metrics.total }}</div>
+    </div>
+    <div class="card pending">
+      <div class="label">Pending</div>
+      <div class="value">{{ metrics.pending }}</div>
+    </div>
+    <div class="card sending">
+      <div class="label">Sending</div>
+      <div class="value">{{ metrics.sending }}</div>
+    </div>
+    <div class="card sent">
+      <div class="label">Sent</div>
+      <div class="value">{{ metrics.sent }}</div>
+    </div>
+    <div class="card failed">
+      <div class="label">Failed</div>
+      <div class="value">{{ metrics.failed }}</div>
+    </div>
+    <div class="card dead">
+      <div class="label">Dead Letter</div>
+      <div class="value">{{ metrics.dead_letter }}</div>
+    </div>
+    <div class="card queue">
+      <div class="label">Redis Clients</div>
+      <div class="value">{{ metrics.queue_depth }}</div>
+    </div>
+  </div>
+
+  <h2>Worker Health</h2>
+  {% if metrics.workers %}
+  <table>
+    <thead>
+      <tr>
+        <th>Worker ID</th>
+        <th>Status</th>
+        <th>Processed</th>
+        <th>Failed</th>
+        <th>Last Activity</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for w in metrics.workers %}
+      <tr>
+        <td><strong>{{ w.worker_id }}</strong></td>
+        <td><span class="badge ok">running</span></td>
+        <td>{{ w.processed }}</td>
+        <td>{{ w.failed }}</td>
+        <td>{{ w.last_activity }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:#888; padding:16px 0;">No workers registered yet. Workers report in after processing their first message.</p>
+  {% endif %}
+
+  <footer>Email Notification System v1.0.0</footer>
+</body>
+</html>
